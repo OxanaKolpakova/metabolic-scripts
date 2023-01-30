@@ -1,6 +1,6 @@
 #!/bin/bash
 # This script is used to find UniRef ID and ReactionsFound names of
-reactions of interest in files *FINALPATH.tbl to create a summary table of carotenoid-like enzymes.
+# reactions of interest in files *FINALPATH.tbl to create a summary table of carotenoid-like enzymes.
 echo -n "	"
 echo -n "dye-decolorizing peroxidase"
 echo -n "farnesyl diphosphate synthase"
