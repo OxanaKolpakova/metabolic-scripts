@@ -1,0 +1,38 @@
+---
+title: "carotenoid-like enzymes"
+author: "Oxana Kolpakova"
+date: "24 10 2022"
+output: html_document
+---
+
+```{r}
+library(sybil)
+library(data.table)
+```
+
+```{r}
+path <- c("") # path to the folder with *.RDS files
+# take strain name without extension 
+namelist <- c("Pseudoalteromonas_arctica_A_37_1_2_GCA_000238395_4", "Pseudoalteromonas_distincta_2_2A_13", "Pseudoalteromonas_distincta_16_SW_7_GCA_005877035_1", "Pseudoalteromonas_distincta_ANT_505_GCA_000212655_3", "Pseudoalteromonas_distincta_ATCC700518T_GCA_000814675_1", "Pseudoalteromonas_distincta_U2A_GCA_008370225_1", "Pseudoalteromonas_elyakovii_SM1926_GCA_007786285_1", "Pseudoalteromonas_paragorgicola_KMM3548_GCA_014918315_1", "Pseudoalteromonas_sp_AC163_GCA_000497935_1", "Pseudoalteromonas_sp_AC163_GCA_000497935_1", "Pseudoalteromonas_sp_TAE79_GCA_000498015_1", "Pseudoalteromonas_sp_TAE80_GCA_000498035_1", "Pseudoalteromonas_sp_TB25_GCA_000497995_1")
+for (name in namelist) {
+  fullname <- paste0(path, name, ".RDS")
+  pathwayname <- paste0(path, name, "-all-Pathways.tbl")
+  outfoldername <- paste0(path, "/output/", name, "_FINALPATH.tbl")
+  # mod writes a file for processing
+  mod <- readRDS(fullname)
+  # optimization
+  mtf <- optimizeProb(mod, algorithm="mtf")
+  # selects the required fields from the *.RDS file
+  sol.dt <- data.table(react_id=mod@react_id, react_name=mod@react_name, flux=mtf@fluxdist@fluxes[1:mod@react_num], rxn=mod@react_attr$rxn, name=mod@react_attr$name, ec=mod@react_attr$ec,     qseqid=mod@react_attr$qseqid, pident=mod@react_attr$pident, evalue=mod@react_attr$evalue, bitscore=mod@react_attr$bitscore, qcovs=mod@react_attr$qcovs, pathway=mod@react_attr$pathway, status=mod@react_attr$status, pathway.status=mod@react_attr$pathway.status)
+# searches by keywords
+  Finded <- sol.dt[grepl("carotene|xanthine|lycopene|lutein|farnesyl|Crt|GGPP|tyrosine|phenylalanine|homogentisic|homogentisate|alginate|AlgR|xylose|xylan|xylosidase|xylanase| pectinesterase|pectin|KdgF|pectate|arylpolyene|aryl|polyene|resorcinol|APE|KS1|KS2|ketoacyl|acyl|oxoacyl", react_name)]
+# excludes NA
+   Finded <- na.omit(Finded)
+# selects the "ID" and "pathway" fields 
+   Pathways <- read.table(pathwayname, fill = TRUE, header = T, sep = "\t")
+setnames(Pathways, "ID", "pathway")
+# merge by ID
+  FINAL <- merge(x = Finded, y = Pathways, by = "pathway", all.x = T)
+  write.table(FINAL, file = outfoldername, row.names=F, na="", col.names=T, sep="\t")
+}
+```
